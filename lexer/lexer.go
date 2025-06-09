@@ -81,11 +81,13 @@ func (l *Lexer) NextToken() token.Token {
 	default:
 		if isLetter(l.ch) {
 			tok.Line = l.line
+			tok.Column = l.column
 			tok.Literal = l.readIdentifier()
 			tok.Type = token.LookupIdent(tok.Literal)
 			return tok
 		} else if isDigit(l.ch) {
 			tok.Line = l.line
+			tok.Column = l.column
 			tok.Literal = l.readNumber()
 			tok.Type = token.INT
 			return tok
@@ -95,7 +97,6 @@ func (l *Lexer) NextToken() token.Token {
 	}
 
 	l.readChar()
-	l.column += 1
 	return tok
 }
 
@@ -112,7 +113,6 @@ func (l *Lexer) nextCharIs(ch byte) bool {
 func (l *Lexer) makeTwoCharacterToken(tokenType token.TokenType, literal string) token.Token {
 	tok := newToken(tokenType, literal, l.line, l.column)
 	l.readChar()
-	l.column += 1
 	return tok
 }
 
@@ -153,4 +153,10 @@ func (l *Lexer) readChar() {
 	}
 	l.position = l.readPosition
 	l.readPosition += 1
+	if l.ch == '\n' {
+		l.line += 1
+		l.column = 0
+	} else {
+		l.column += 1
+	}
 }
